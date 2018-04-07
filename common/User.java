@@ -1,6 +1,6 @@
 package common;
 
-public class User extends Model{
+public class User extends Model {
 
     private String name;
     private String password;
@@ -17,5 +17,7 @@ public class User extends Model{
     public String getName() {
         return name;
     }
-
+    public String getPassword() { return password; }
+    public String getAddress() { return address; }
+    public Postcode getPostcode() { return postcode; }
 }

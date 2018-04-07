@@ -1,5 +1,8 @@
 package common;
 
+import server.Server;
+import server.ServerWindow;
+
 import java.util.Map;
 
 public class Dish extends Model {
@@ -10,7 +13,7 @@ public class Dish extends Model {
     private Number restockThreshold;
     private Number restockAmount;
     private Map<Ingredient, Number> recipe;
-    private Number stock = 10;
+    private Number stock;
 
     public Dish(String name, String description, Number price, Number restockThreshold, Number restockAmount) {
         this.name = name;
@@ -18,6 +21,7 @@ public class Dish extends Model {
         this.price = price;
         this.restockThreshold = restockThreshold;
         this.restockAmount = restockAmount;
+        this.stock = 0;
     }
 
     @Override
@@ -27,7 +31,8 @@ public class Dish extends Model {
     public String getDescription() { return description; }
     public Number getPrice() { return price; }
     public Number getRestockThreshold() { return restockThreshold; }
-    public Number getRestockamount() { return restockAmount; }
+    public Number getRestockAmount() { return restockAmount; }
+    public Number getStock() { return stock; }
     public Map<Ingredient, Number> getRecipe() { return recipe; }
 
     public void setStock(Number stock) { this.stock = stock; }

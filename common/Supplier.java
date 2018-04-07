@@ -15,4 +15,6 @@ public class Supplier extends Model {
         return name;
     }
     public Number getDistance() { return distance; }
+    public void setDistance(Number distance) { this.distance = distance; }
+    public void setName(String name) { this.name = name; }
 }

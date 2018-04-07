@@ -8,17 +8,17 @@ public class Order extends Model {
     private String status;
     private Number cost;
 
-    public Order(String name, Number distance, Number cost) {
+    public Order(String name,  Number cost, Number distance) {
         this.name = name;
         this.distance = distance;
         this.complete = false;
-        this.status = "Created";
+        this.status = "Unfinished";
         this.cost = cost;
     }
 
     @Override
     public String getName() {
-        return null;
+        return name;
     }
     public Number getDistance() { return distance; }
     public boolean isComplete() { return complete; }

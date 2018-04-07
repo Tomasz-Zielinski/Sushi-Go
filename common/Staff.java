@@ -7,12 +7,13 @@ public class Staff extends Model implements Runnable {
 
     public Staff(String name) {
         this.name = name;
+        this.status = "Free";
     }
 
 
     @Override
     public String getName() {
-        return null;
+        return name;
     }
     public String getStatus() { return status; }
 
