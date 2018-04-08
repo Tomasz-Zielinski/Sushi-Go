@@ -1,11 +1,9 @@
 package common;
 
-import server.Server;
-import server.ServerWindow;
-
+import java.io.Serializable;
 import java.util.Map;
 
-public class Dish extends Model {
+public class Dish extends Model implements Serializable {
 
     private String name;
     private String description;

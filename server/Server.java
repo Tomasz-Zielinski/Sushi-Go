@@ -13,7 +13,6 @@ import java.util.Map;
 
 public class Server extends Model implements ServerInterface {
 
-    private List<User> users = new ArrayList<>();
     private List<Dish> dishes = new ArrayList<>();
     private boolean restockingIngredientsEnbaled = true;
     private boolean restockingDishesEnbaled = true;
@@ -26,6 +25,7 @@ public class Server extends Model implements ServerInterface {
     private List<Order> orders = new ArrayList<>();
     private List<Postcode> postcodes = new ArrayList<>();
     private ServerWindow window;
+    public List<User> userList = new ArrayList<>();
 
     public void assign(ServerWindow window) {
         this.window = window;
@@ -52,11 +52,10 @@ public class Server extends Model implements ServerInterface {
                     } else if(e.startsWith("USER")) {
                         Postcode code = new Postcode("Blank", 0);
                         for (Postcode postcode : postcodes) {
-                            if(postcode.getCode().equals(arr[4])) {
-                                code = postcode;
-                            }
+                            if(postcode.getCode().equals(arr[4])) code = postcode;
                         }
-                        users.add(new User(arr[1], arr[2], arr[3], code));
+                        userList.add(new User(arr[1], arr[2], arr[3], code));
+                        notifyUpdate();
                     } else if(e.startsWith("ORDER")) {
                         Number cost = 0;
                         int quantity;
@@ -73,7 +72,7 @@ public class Server extends Model implements ServerInterface {
                             }
                         }
                         Number distance = 0;
-                        for (User user : users) {
+                        for (User user : userList) {
                             if(user.getName().equals(arr[1])) {
                                 distance = user.getPostcode().getDistance();
                             }
@@ -102,7 +101,10 @@ public class Server extends Model implements ServerInterface {
     public void setRestockingDishesEnabled(boolean enabled) { restockingDishesEnbaled = enabled; }
 
     @Override
-    public void setStock(Dish dish, Number stock) { dish.setStock(stock); }
+    public void setStock(Dish dish, Number stock) {
+        dish.setStock(stock);
+        notifyUpdate();
+    }
 
     @Override
     public void setStock(Ingredient ingredient, Number stock) {
@@ -328,12 +330,12 @@ public class Server extends Model implements ServerInterface {
 
     @Override
     public List<User> getUsers() {
-        return users;
+        return userList;
     }
 
     @Override
     public void removeUser(User user) throws UnableToDeleteException {
-        users.remove(user);
+        userList.remove(user);
         notifyUpdate();
     }
 

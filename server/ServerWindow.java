@@ -1201,6 +1201,7 @@ public class ServerWindow extends JFrame implements UpdateListener {
 		staffPanel.refresh();
 		postcodePanel.refresh();
 		supplierPanel.refresh();
+		userPanel.refresh();
 	}
 
 	@Override

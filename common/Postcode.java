@@ -2,11 +2,12 @@ package common;
 
 public class Postcode extends Model {
 
+    private String name;
     private String code;
     private Number distance;
 
     public Postcode(String code, Number distance) {
-        this.name = "Postcode";
+        this.name = code;
         this.code = code;
         this.distance = distance;
     }

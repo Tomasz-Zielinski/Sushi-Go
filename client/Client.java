@@ -1,6 +1,11 @@
 package client;
 
 import common.*;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,9 +13,27 @@ import java.util.Map;
 
 public class Client implements ClientInterface {
 
+    private ClientWindow window;
+    private Socket socket;
+
+    public Client(Socket socket) {
+        this.socket = socket;
+    }
+
+    public void assign(ClientWindow window) {
+        this.window = window;
+    }
+
     @Override
     public User register(String username, String password, String address, Postcode postcode) {
-        return new User(username, password, address, postcode);
+        User user = new User(username, password, address, postcode);
+        try {
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            out.writeObject(user);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return user;
     }
 
     @Override
@@ -25,9 +48,23 @@ public class Client implements ClientInterface {
 
     @Override
     public List<Dish> getDishes() {
-        return new ArrayList<Dish>(){{
-
-        }};
+        ArrayList<Dish> dishes = new ArrayList<>();
+        Packet packet = new Packet("dish");
+        if (socket.isBound()) {
+            try {
+                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                out.writeObject(packet);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        try {
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+            dishes = (ArrayList<Dish>) in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return dishes;
     }
 
     @Override
@@ -102,6 +139,6 @@ public class Client implements ClientInterface {
 
     @Override
     public void notifyUpdate() {
-
+        window.updated(new UpdateEvent());
     }
 }
