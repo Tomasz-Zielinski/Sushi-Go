@@ -2,6 +2,8 @@ package common;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Dish extends Model implements Serializable {
 
@@ -12,6 +14,7 @@ public class Dish extends Model implements Serializable {
     private Number restockAmount;
     private Map<Ingredient, Number> recipe;
     private Number stock;
+    private Lock lock = new ReentrantLock();
 
     public Dish(String name, String description, Number price, Number restockThreshold, Number restockAmount) {
         this.name = name;
@@ -32,6 +35,10 @@ public class Dish extends Model implements Serializable {
     public Number getRestockAmount() { return restockAmount; }
     public Number getStock() { return stock; }
     public Map<Ingredient, Number> getRecipe() { return recipe; }
+
+    public Lock getLock() {
+        return lock;
+    }
 
     public void setStock(Number stock) { this.stock = stock; }
     public void setRecipe(Map<Ingredient, Number> recipe) { this.recipe = recipe; }

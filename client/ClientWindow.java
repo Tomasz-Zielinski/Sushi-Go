@@ -439,7 +439,7 @@ public class ClientWindow extends JFrame implements UpdateListener {
 				String u = loginPanel.username.getText();
 				String p = String.valueOf(loginPanel.password.getPassword());
 				User user = client.login(u, p);
-				if(user != null) {
+				if(!user.getName().equals("") && !user.getPassword().equals("")) {
 					this.dispose();
 					success.accept(user);
 				} else {

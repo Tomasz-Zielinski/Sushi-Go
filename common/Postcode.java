@@ -1,6 +1,8 @@
 package common;
 
-public class Postcode extends Model {
+import java.io.Serializable;
+
+public class Postcode extends Model implements Serializable {
 
     private String name;
     private String code;

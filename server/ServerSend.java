@@ -14,6 +14,10 @@ public class ServerSend implements Runnable {
         this.socket = socket;
     }
 
+    public synchronized void setSocket(Socket socket) {
+        this.socket = socket;
+    }
+
     @Override
     public void run() {
         while(true) {

@@ -18,6 +18,7 @@ public class ClientReceive implements Runnable {
         while(true) {
             try {
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+                System.out.println(in.read());
                 User u = (User) in.readObject();
                 System.out.println(u.getName());
             } catch (IOException | ClassNotFoundException e) {

@@ -1,13 +1,11 @@
 package client;
 
 import common.*;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,9 +13,11 @@ public class Client implements ClientInterface {
 
     private ClientWindow window;
     private Socket socket;
+    private Comms comms;
 
     public Client(Socket socket) {
         this.socket = socket;
+        this.comms = new Comms(socket);
     }
 
     public void assign(ClientWindow window) {
@@ -26,24 +26,28 @@ public class Client implements ClientInterface {
 
     @Override
     public User register(String username, String password, String address, Postcode postcode) {
-        User user = new User(username, password, address, postcode);
-        try {
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            out.writeObject(user);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        User user = comms.registerNewUser(username, password, address, postcode);
         return user;
     }
 
     @Override
     public User login(String username, String password) {
-        return new User("kek", "kek", "bryk", new Postcode("XD", 1));
+        User user = comms.login(username, password);
+        return user;
     }
 
     @Override
     public List<Postcode> getPostcodes() {
-        return new ArrayList<Postcode>() { {add(new Postcode("08F", 1));}};
+        try {
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            out.writeObject(new Packet("postcodes"));
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+            ArrayList<Postcode> o = (ArrayList<Postcode>) in.readObject();
+            return o;
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
@@ -74,27 +78,28 @@ public class Client implements ClientInterface {
 
     @Override
     public Number getDishPrice(Dish dish) {
-        return 15;
+        return dish.getPrice();
     }
 
     @Override
     public Map<Dish, Number> getBasket(User user) {
-        return new HashMap<Dish, Number>();
+        return user.getBasket();
     }
 
     @Override
     public Number getBasketCost(User user) {
-        return 5;
+        ArrayList<Integer> prices = new ArrayList<>();
+        Integer price = 0;
+        user.getBasket().forEach((key, value) -> prices.add((int) key.getPrice() * (int)value));
+        for (Integer integer : prices) {
+            price += integer;
+        }
+        return price;
     }
 
     @Override
     public void addDishToBasket(User user, Dish dish, Number quantity) {
-
-    }
-
-    @Override
-    public void updateDishInBasket(User user, Dish dish, Number quantity) {
-
+        user.addToBasket(dish, quantity);
     }
 
     @Override
@@ -102,6 +107,11 @@ public class Client implements ClientInterface {
         return new Order("test",1,1);
     }
 
+
+    @Override
+    public void updateDishInBasket(User user, Dish dish, Number quantity) {
+
+    }
     @Override
     public void clearBasket(User user) {
 

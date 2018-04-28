@@ -46,7 +46,17 @@ public class Server extends Model implements ServerInterface {
                         }
                         addIngredient(arr[1], arr[2], sup, Integer.valueOf(arr[4]), Integer.valueOf(arr[5]));
                     } else if(e.startsWith("DISH")) {
+                        String[] r = arr[6].split(",");
+                        HashMap<Ingredient, Number> recipe = new HashMap<>();
+                        for (String s : r) {
+                            for (Ingredient ingredient : getIngredients()) {
+                                if(ingredient.getName().equals(s.split(" ")[2])) {
+                                    recipe.put(ingredient, Integer.parseInt(s.split(" ")[0]));
+                                }
+                            }
+                        }
                         addDish(arr[1], arr[2], Integer.valueOf(arr[3]), Integer.valueOf(arr[4]), Integer.valueOf(arr[5]));
+                        getDishes().get(dishes.size()-1).setRecipe(recipe);
                     } else if(e.startsWith("POSTCODE")) {
                         addPostcode(arr[1], Integer.valueOf(arr[2]));
                     } else if(e.startsWith("USER")) {
@@ -124,7 +134,10 @@ public class Server extends Model implements ServerInterface {
     }
 
     @Override
-    public void removeDish(Dish dish) throws UnableToDeleteException { dishes.remove(dish); }
+    public void removeDish(Dish dish) throws UnableToDeleteException {
+        dishes.remove(dish);
+        notifyUpdate();
+    }
 
     @Override
     public void addIngredientToDish(Dish dish, Ingredient ingredient, Number quantity) {
@@ -236,8 +249,10 @@ public class Server extends Model implements ServerInterface {
 
     @Override
     public Drone addDrone(Number speed) {
-        Drone drone = new Drone(speed);
+        Drone drone = new Drone(speed, this);
         drones.add(drone);
+        Thread d = new Thread(drone);
+        d.start();
         notifyUpdate();
         return drone;
     }
@@ -263,8 +278,10 @@ public class Server extends Model implements ServerInterface {
 
     @Override
     public Staff addStaff(String name) {
-        Staff s = new Staff(name);
+        Staff s = new Staff(name, this);
         staff.add(s);
+        Thread d = new Thread(s);
+        d.start();
         notifyUpdate();
         return s;
     }

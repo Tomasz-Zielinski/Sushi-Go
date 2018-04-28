@@ -24,24 +24,29 @@ public class ServerApplication extends Thread {
 
     private ServerApplication(int port, Server server) throws IOException {
         serverSocket = new ServerSocket(port);
-        serverSocket.setSoTimeout(10000);
         this.server = server;
     }
 
     public void run() {
+        Socket socket = null;
+        try {
+            socket = serverSocket.accept();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ServerReceive sr = new ServerReceive(socket, server);
+        ServerSend sd = new ServerSend(socket);
+        Thread t1 = new Thread(sr);
+        Thread t2 = new Thread(sd);
+        t1.start();
+        t2.start();
         while(true) {
             try {
                 System.out.println("Waiting for client on port " + serverSocket.getLocalPort() + "...");
-                Socket socket = serverSocket.accept();
+                socket = serverSocket.accept();
                 System.out.println("Just connected to " + socket.getRemoteSocketAddress());
-                Thread t1 = new Thread(new ServerReceive(socket, server));
-                Thread t2 = new Thread(new ServerSend(socket));
-                t1.start();
-                t2.start();
-                while (true);
-            } catch (SocketTimeoutException s) {
-                System.out.println("Socket timed out!");
-                break;
+                sr.setSocket(socket);
+                sd.setSocket(socket);
             } catch (IOException e) {
                 e.printStackTrace();
                 break;
