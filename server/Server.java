@@ -1,8 +1,9 @@
 package server;
 
+import client.ClientWindow;
 import common.*;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -13,6 +14,7 @@ import java.util.Map;
 
 public class Server extends Model implements ServerInterface {
 
+    private ServerWindow window;
     private List<Dish> dishes = new ArrayList<>();
     private boolean restockingIngredientsEnbaled = true;
     private boolean restockingDishesEnbaled = true;
@@ -24,15 +26,14 @@ public class Server extends Model implements ServerInterface {
     private List<Staff> staff = new ArrayList<>();
     private List<Order> orders = new ArrayList<>();
     private List<Postcode> postcodes = new ArrayList<>();
-    private ServerWindow window;
     public List<User> userList = new ArrayList<>();
 
-    public void assign(ServerWindow window) {
+    public void build(ServerWindow window) {
         this.window = window;
     }
 
     @Override
-    public void loadConfiguration(String filename) throws FileNotFoundException {
+    public void loadConfiguration(String filename) {
         try {
             Files.lines(Paths.get(filename), StandardCharsets.UTF_8).forEach(e -> {
                 if(e.length() != 0) {
@@ -134,7 +135,7 @@ public class Server extends Model implements ServerInterface {
     }
 
     @Override
-    public void removeDish(Dish dish) throws UnableToDeleteException {
+    public void removeDish(Dish dish) {
         dishes.remove(dish);
         notifyUpdate();
     }
@@ -192,7 +193,7 @@ public class Server extends Model implements ServerInterface {
     }
 
     @Override
-    public void removeIngredient(Ingredient ingredient) throws UnableToDeleteException {
+    public void removeIngredient(Ingredient ingredient) {
         ingredients.remove(ingredient);
         notifyUpdate();
     }
@@ -232,7 +233,7 @@ public class Server extends Model implements ServerInterface {
     }
 
     @Override
-    public void removeSupplier(Supplier supplier) throws UnableToDeleteException {
+    public void removeSupplier(Supplier supplier) {
         suppliers.remove(supplier);
         notifyUpdate();
     }
@@ -258,7 +259,7 @@ public class Server extends Model implements ServerInterface {
     }
 
     @Override
-    public void removeDrone(Drone drone) throws UnableToDeleteException {
+    public void removeDrone(Drone drone) {
         drones.remove(drone);
         notifyUpdate();
     }
@@ -287,7 +288,7 @@ public class Server extends Model implements ServerInterface {
     }
 
     @Override
-    public void removeStaff(Staff staff) throws UnableToDeleteException {
+    public void removeStaff(Staff staff) {
         this.staff.remove(staff);
         notifyUpdate();
     }
@@ -303,7 +304,7 @@ public class Server extends Model implements ServerInterface {
     }
 
     @Override
-    public void removeOrder(Order order) throws UnableToDeleteException {
+    public void removeOrder(Order order) {
         orders.remove(order);
         notifyUpdate();
     }
@@ -340,7 +341,7 @@ public class Server extends Model implements ServerInterface {
     }
 
     @Override
-    public void removePostcode(Postcode postcode) throws UnableToDeleteException {
+    public void removePostcode(Postcode postcode) {
         postcodes.remove(postcode);
         notifyUpdate();
     }
@@ -351,7 +352,7 @@ public class Server extends Model implements ServerInterface {
     }
 
     @Override
-    public void removeUser(User user) throws UnableToDeleteException {
+    public void removeUser(User user) {
         userList.remove(user);
         notifyUpdate();
     }

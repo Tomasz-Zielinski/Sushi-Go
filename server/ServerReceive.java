@@ -5,6 +5,7 @@ import java.net.Socket;
 import java.net.SocketException;
 
 import common.Drone;
+import common.Order;
 import common.Packet;
 import common.User;
 
@@ -22,20 +23,26 @@ public class ServerReceive implements Runnable {
     public void run() {
         while(true) {
             try {
-
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
                 Object o = in.readObject();
                 if(o instanceof User) {
-                    if(!server.userList.contains(o)) {
+                    if (!server.userList.contains(o)) {
                         server.userList.add((User) o);
                         server.notifyUpdate();
                     } else {
                         System.out.println("User already exist");
                     }
+                } else if(o instanceof Order) {
+                    server.getOrders().add((Order) o);
                 } else if(o instanceof Packet) {
                     if(((Packet) o).getMessage().equals("dish")) {
                         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                         out.writeObject(server.getDishes());
+                    } else if(((Packet) o).getMessage().equals("orders")) {
+                        ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                        out.writeObject(server.getOrders());
+                    } else if(((Packet) o).getMessage().equals("cancel")) {
+                        server.getOrders().remove(((Packet) o).getOrder());
                     } else if(((Packet) o).getMessage().startsWith("login")) {
                         String arr[] = ((Packet) o).getMessage().split(" ");
                         System.out.println("Somebody wants to login" + arr[1] + arr[2]);
@@ -51,11 +58,11 @@ public class ServerReceive implements Runnable {
                     } else if(((Packet) o).getMessage().startsWith("postcodes")) {
                         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                         out.writeObject(server.getPostcodes());
+                        System.out.println(server.getPostcodes());
                     }
                 }
             } catch (SocketException e) {
                 System.out.println("Client disconnected");
-                break;
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
                 break;

@@ -1,9 +1,10 @@
 package common;
 
+import java.io.Serializable;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class Ingredient extends Model {
+public class Ingredient extends Model implements Serializable {
 
     private String name;
     private String unit;

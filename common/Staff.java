@@ -22,7 +22,7 @@ public class Staff extends Model implements Runnable {
         try {
             for (Dish dish : server.getDishes()) {
                 if (!dish.getLock().tryLock()) {
-                    status = "Another staff is making " + dish.getName() + ", moving on";
+                    status = "Idle";
                     server.notifyUpdate();
                     TimeUnit.SECONDS.sleep(2);
                     continue;
@@ -47,6 +47,7 @@ public class Staff extends Model implements Runnable {
                     }
                 }
                 if (canMake) {
+                    dish.getRecipe().forEach((key, value) -> key.setStock((int) key.getStock() - (int) value));
                     int waitTime = (int) (Math.random() * 40 + 20);
                     for (int t = waitTime; t > 0; t--) {
                         status = "Making " + dish.getName() + " - " + t + "s left";
@@ -54,7 +55,6 @@ public class Staff extends Model implements Runnable {
                         TimeUnit.SECONDS.sleep(1);
                     }
                     dish.setStock((Integer) dish.getStock() + 1);
-                    dish.getRecipe().forEach((key, value) -> key.setStock((Integer) key.getStock() - (Integer) value));
                 }
                 dish.getLock().unlock();
             }

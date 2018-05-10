@@ -1,9 +1,6 @@
 package client;
 
 import common.*;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +11,7 @@ public class Client implements ClientInterface {
     private ClientWindow window;
     private Socket socket;
     private Comms comms;
+    private User user;
 
     public Client(Socket socket) {
         this.socket = socket;
@@ -26,49 +24,22 @@ public class Client implements ClientInterface {
 
     @Override
     public User register(String username, String password, String address, Postcode postcode) {
-        User user = comms.registerNewUser(username, password, address, postcode);
-        return user;
+        return comms.registerNewUser(username, password, address, postcode);
     }
 
     @Override
     public User login(String username, String password) {
-        User user = comms.login(username, password);
-        return user;
+        return comms.login(username, password);
     }
 
     @Override
     public List<Postcode> getPostcodes() {
-        try {
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            out.writeObject(new Packet("postcodes"));
-            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-            ArrayList<Postcode> o = (ArrayList<Postcode>) in.readObject();
-            return o;
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return comms.getPostcodes();
     }
 
     @Override
     public List<Dish> getDishes() {
-        ArrayList<Dish> dishes = new ArrayList<>();
-        Packet packet = new Packet("dish");
-        if (socket.isBound()) {
-            try {
-                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-                out.writeObject(packet);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        try {
-            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-            dishes = (ArrayList<Dish>) in.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return dishes;
+        return comms.getDishes();
     }
 
     @Override
@@ -100,52 +71,58 @@ public class Client implements ClientInterface {
     @Override
     public void addDishToBasket(User user, Dish dish, Number quantity) {
         user.addToBasket(dish, quantity);
+        notifyUpdate();
     }
 
     @Override
     public Order checkoutBasket(User user) {
-        return new Order("test",1,1);
+        ClientOrders clientOrders = new ClientOrders(this, user);
+        Thread d = new Thread(clientOrders);
+        d.start();
+        return comms.makeOrder(user, getBasketCost(user));
     }
 
 
     @Override
     public void updateDishInBasket(User user, Dish dish, Number quantity) {
-
+        user.getBasket().put(dish, quantity);
+        notifyUpdate();
     }
     @Override
     public void clearBasket(User user) {
-
+        user.getBasket().clear();
+        notifyUpdate();
     }
 
     @Override
     public List<Order> getOrders(User user) {
-        return new ArrayList<Order>();
+        this.user = user;
+        return comms.getOrders();
     }
 
     @Override
     public boolean isOrderComplete(Order order) {
-        return false;
+        return order.isComplete();
     }
 
     @Override
     public String getOrderStatus(Order order) {
-        return "prepping";
+        return order.getStatus();
     }
 
     @Override
     public Number getOrderCost(Order order) {
-        return 3;
+        return order.getCost();
     }
 
     @Override
     public void cancelOrder(Order order) {
-
+        comms.cancelOrder(order);
+        notifyUpdate();
     }
 
     @Override
-    public void addUpdateListener(UpdateListener listener) {
-
-    }
+    public void addUpdateListener(UpdateListener listener) { }
 
     @Override
     public void notifyUpdate() {

@@ -49,6 +49,7 @@ public class ClientWindow extends JFrame implements UpdateListener {
 
 		//Launch the login window on startup, before displaying client UI
 		LoginWindow loginWindow = new LoginWindow();
+
 		loginWindow.setSuccess(user -> {
 			//Display window
 			setSize(800,600);
@@ -439,11 +440,11 @@ public class ClientWindow extends JFrame implements UpdateListener {
 				String u = loginPanel.username.getText();
 				String p = String.valueOf(loginPanel.password.getPassword());
 				User user = client.login(u, p);
-				if(!user.getName().equals("") && !user.getPassword().equals("")) {
+				if(user == null) {
+					JOptionPane.showMessageDialog(this, "Invalid username or password");
+				} else {
 					this.dispose();
 					success.accept(user);
-				} else {
-					JOptionPane.showMessageDialog(this, "Invalid username or password");
 				}
 			});
 
@@ -581,10 +582,9 @@ public class ClientWindow extends JFrame implements UpdateListener {
 				JLabel locationLabel = new JLabel("Locations");
 				location = new JComboBox<Postcode>();
 				location.setModel(new ComboModel<Postcode>(() -> client.getPostcodes()));
-				if(location.getModel().getSize() > 0) {
+				if(location.getModel().getSize() > -1) {
 					location.setSelectedIndex(0);
 				}
-
 				//Add fields to UI
 				addField(usernameLabel,username);
 				addField(passwordLabel,password);
