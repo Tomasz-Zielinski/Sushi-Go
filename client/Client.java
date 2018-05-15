@@ -9,18 +9,17 @@ import java.util.Map;
 public class Client implements ClientInterface {
 
     private ClientWindow window;
-    private Socket socket;
     private Comms comms;
-    private User user;
+    private User user = null;
 
     public Client(Socket socket) {
-        this.socket = socket;
         this.comms = new Comms(socket);
     }
 
     public void assign(ClientWindow window) {
         this.window = window;
     }
+    public User getUser() { return user; }
 
     @Override
     public User register(String username, String password, String address, Postcode postcode) {
@@ -29,7 +28,9 @@ public class Client implements ClientInterface {
 
     @Override
     public User login(String username, String password) {
-        return comms.login(username, password);
+        User user = comms.login(username, password);
+        this.user = user;
+        return user;
     }
 
     @Override
@@ -76,9 +77,6 @@ public class Client implements ClientInterface {
 
     @Override
     public Order checkoutBasket(User user) {
-        ClientOrders clientOrders = new ClientOrders(this, user);
-        Thread d = new Thread(clientOrders);
-        d.start();
         return comms.makeOrder(user, getBasketCost(user));
     }
 
@@ -96,7 +94,6 @@ public class Client implements ClientInterface {
 
     @Override
     public List<Order> getOrders(User user) {
-        this.user = user;
         return comms.getOrders();
     }
 
@@ -127,5 +124,9 @@ public class Client implements ClientInterface {
     @Override
     public void notifyUpdate() {
         window.updated(new UpdateEvent());
+    }
+
+    public void update() {
+        window.refreshOrders();
     }
 }

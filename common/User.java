@@ -6,20 +6,19 @@ import java.util.Map;
 
 public class User extends Model implements Serializable {
 
-    private String name;
-    private String password;
-    private String address;
+    private String name, password, address;
     private Postcode postcode;
-    private HashMap<Dish, Number> basket = new HashMap<>();
+    private Map<Dish, Number> basket;
 
     public User(String name, String password, String address, Postcode postcode) {
         this.name = name;
         this.password = password;
         this.address = address;
         this.postcode = postcode;
+        this.basket = new HashMap<>();
     }
 
-    public void addToBasket(Dish dish, Number quantity) { this.basket.put(dish, quantity); }
+    public void addToBasket(Dish dish, Number quantity) { basket.put(dish, quantity); }
 
     public String getName() {
         return name;
@@ -27,5 +26,5 @@ public class User extends Model implements Serializable {
     public String getPassword() { return password; }
     public String getAddress() { return address; }
     public Postcode getPostcode() { return postcode; }
-    public HashMap<Dish, Number> getBasket() { return basket; }
+    public Map<Dish, Number> getBasket() { return basket; }
 }

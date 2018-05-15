@@ -4,11 +4,17 @@ import java.util.*;
 
 public class StockManagement {
 
-    private HashMap<String, Integer> max = new HashMap<String,Integer>();
-    private ArrayList<Ingredient> ingredients = new ArrayList<Ingredient>();
-    private HashMap<Dish, Number> dishStockLevels = new HashMap<Dish, Number>();
+    private Map<String, Integer> max;
+    private List<Ingredient> ingredients;
+    private Map<Dish, Number> dishStockLevels;
 
-    public ArrayList<Ingredient> getIngredients() { return ingredients; }
+    StockManagement() {
+        this.max = new HashMap<>();
+        this.ingredients = new ArrayList<>();
+        this.dishStockLevels = new HashMap<>();
+    }
+
+    public List<Ingredient> getIngredients() { return ingredients; }
     public Map<Dish, Number> getDishStockLevels() { return dishStockLevels; }
 
 }

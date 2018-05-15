@@ -1,9 +1,8 @@
 package server;
 
-import client.ClientWindow;
 import common.*;
+
 import java.io.IOException;
-import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -26,74 +25,78 @@ public class Server extends Model implements ServerInterface {
     private List<Staff> staff = new ArrayList<>();
     private List<Order> orders = new ArrayList<>();
     private List<Postcode> postcodes = new ArrayList<>();
-    public List<User> userList = new ArrayList<>();
+    private List<User> userList = new ArrayList<>();
 
     public void build(ServerWindow window) {
         this.window = window;
     }
+    public List<User> getUserList() {return userList;}
 
     @Override
     public void loadConfiguration(String filename) {
         try {
             Files.lines(Paths.get(filename), StandardCharsets.UTF_8).forEach(e -> {
-                if(e.length() != 0) {
+                if (e.length() != 0) {
                     String[] arr = e.split(":");
                     if (e.startsWith("SUPPLIER")) {
                         addSupplier(arr[1], Integer.valueOf(arr[2]));
-                    } else if(e.startsWith("INGREDIENT")) {
+                    } else if (e.startsWith("INGREDIENT")) {
                         Supplier sup = new Supplier("Blank", 0);
                         for (Supplier supplier : suppliers) {
-                            if(supplier.getName().equals(arr[3])) sup = supplier;
+                            if (supplier.getName().equals(arr[3])) sup = supplier;
                         }
                         addIngredient(arr[1], arr[2], sup, Integer.valueOf(arr[4]), Integer.valueOf(arr[5]));
-                    } else if(e.startsWith("DISH")) {
+                    } else if (e.startsWith("DISH")) {
                         String[] r = arr[6].split(",");
                         HashMap<Ingredient, Number> recipe = new HashMap<>();
                         for (String s : r) {
                             for (Ingredient ingredient : getIngredients()) {
-                                if(ingredient.getName().equals(s.split(" ")[2])) {
+                                if (ingredient.getName().equals(s.split(" ")[2])) {
                                     recipe.put(ingredient, Integer.parseInt(s.split(" ")[0]));
                                 }
                             }
                         }
                         addDish(arr[1], arr[2], Integer.valueOf(arr[3]), Integer.valueOf(arr[4]), Integer.valueOf(arr[5]));
-                        getDishes().get(dishes.size()-1).setRecipe(recipe);
-                    } else if(e.startsWith("POSTCODE")) {
+                        getDishes().get(dishes.size() - 1).setRecipe(recipe);
+                    } else if (e.startsWith("POSTCODE")) {
                         addPostcode(arr[1], Integer.valueOf(arr[2]));
-                    } else if(e.startsWith("USER")) {
+                    } else if (e.startsWith("USER")) {
                         Postcode code = new Postcode("Blank", 0);
                         for (Postcode postcode : postcodes) {
-                            if(postcode.getCode().equals(arr[4])) code = postcode;
+                            if (postcode.getCode().equals(arr[4])) code = postcode;
                         }
                         userList.add(new User(arr[1], arr[2], arr[3], code));
                         notifyUpdate();
-                    } else if(e.startsWith("ORDER")) {
+                    } else if (e.startsWith("ORDER")) {
                         Number cost = 0;
                         int quantity;
+                        Map<Dish, Number> basket = new HashMap<>();
                         String[] o = arr[2].split(",");
                         for (String s : o) {
                             String[] order = s.split(" ");
-                            if(order.length > 3) order[2] = order[2] + " " + order[3];
+                            if (order.length > 3) order[2] = order[2] + " " + order[3];
                             quantity = Integer.valueOf(order[0]);
                             String dish = order[2];
                             for (Dish d : dishes) {
-                                if(d.getName().equals(dish)) {
+                                if (d.getName().equals(dish)) {
                                     cost = quantity * (int) d.getPrice();
+                                    basket.put(d, quantity);
                                 }
                             }
                         }
                         Number distance = 0;
                         for (User user : userList) {
-                            if(user.getName().equals(arr[1])) {
+                            if (user.getName().equals(arr[1])) {
                                 distance = user.getPostcode().getDistance();
                             }
                         }
-                        orders.add(new Order(arr[1], cost, distance));
-                    } else if(e.startsWith("STOCK")) {
-
-                    } else if(e.startsWith("STAFF")) {
+                        orders.add(new Order(arr[1], cost, distance, basket));
+                        notifyUpdate();
+                    } else if (e.startsWith("STOCK")) {
+                        getDishes().forEach(d -> d.setStock(20));
+                    } else if (e.startsWith("STAFF")) {
                         addStaff(arr[1]);
-                    } else if(e.startsWith("DRONE")) {
+                    } else if (e.startsWith("DRONE")) {
                         addDrone(Integer.valueOf(arr[1]));
                     } else {
                         System.out.println("????");
@@ -106,10 +109,14 @@ public class Server extends Model implements ServerInterface {
     }
 
     @Override
-    public void setRestockingIngredientsEnabled(boolean enabled) { restockingIngredientsEnbaled = enabled; }
+    public void setRestockingIngredientsEnabled(boolean enabled) {
+        restockingIngredientsEnbaled = enabled;
+    }
 
     @Override
-    public void setRestockingDishesEnabled(boolean enabled) { restockingDishesEnbaled = enabled; }
+    public void setRestockingDishesEnabled(boolean enabled) {
+        restockingDishesEnbaled = enabled;
+    }
 
     @Override
     public void setStock(Dish dish, Number stock) {
@@ -124,7 +131,9 @@ public class Server extends Model implements ServerInterface {
     }
 
     @Override
-    public List<Dish> getDishes() { return dishes; }
+    public List<Dish> getDishes() {
+        return dishes;
+    }
 
     @Override
     public Dish addDish(String name, String description, Number price, Number restockThreshold, Number restockAmount) {
@@ -142,17 +151,19 @@ public class Server extends Model implements ServerInterface {
 
     @Override
     public void addIngredientToDish(Dish dish, Ingredient ingredient, Number quantity) {
-
+        dish.getRecipe().put(ingredient, quantity);
     }
 
     @Override
     public void removeIngredientFromDish(Dish dish, Ingredient ingredient) {
-
+        dish.getRecipe().remove(ingredient);
+        notifyUpdate();
     }
 
     @Override
     public void setRecipe(Dish dish, Map<Ingredient, Number> recipe) {
         dish.setRecipe(recipe);
+        notifyUpdate();
     }
 
     @Override
@@ -182,7 +193,9 @@ public class Server extends Model implements ServerInterface {
     }
 
     @Override
-    public List<Ingredient> getIngredients() { return ingredients; }
+    public List<Ingredient> getIngredients() {
+        return ingredients;
+    }
 
     @Override
     public Ingredient addIngredient(String name, String unit, Supplier supplier, Number restockThreshold, Number restockAmount) {
@@ -193,10 +206,7 @@ public class Server extends Model implements ServerInterface {
     }
 
     @Override
-    public void removeIngredient(Ingredient ingredient) {
-        ingredients.remove(ingredient);
-        notifyUpdate();
-    }
+    public void removeIngredient(Ingredient ingredient) { ingredients.remove(ingredient); }
 
     @Override
     public void setRestockLevels(Ingredient ingredient, Number restockThreshold, Number restockAmount) {
@@ -252,8 +262,9 @@ public class Server extends Model implements ServerInterface {
     public Drone addDrone(Number speed) {
         Drone drone = new Drone(speed, this);
         drones.add(drone);
-        Thread d = new Thread(drone);
-        d.start();
+        Thread task = new Thread(drone);
+        task.start();
+        drone.thread = task;
         notifyUpdate();
         return drone;
     }
@@ -261,6 +272,7 @@ public class Server extends Model implements ServerInterface {
     @Override
     public void removeDrone(Drone drone) {
         drones.remove(drone);
+        drone.thread.interrupt();
         notifyUpdate();
     }
 
@@ -275,14 +287,16 @@ public class Server extends Model implements ServerInterface {
     }
 
     @Override
-    public List<Staff> getStaff() { return staff; }
+    public List<Staff> getStaff() {
+        return staff;
+    }
 
     @Override
     public Staff addStaff(String name) {
         Staff s = new Staff(name, this);
         staff.add(s);
-        Thread d = new Thread(s);
-        d.start();
+        Thread thread = new Thread(s);
+        thread.start();
         notifyUpdate();
         return s;
     }
@@ -359,7 +373,7 @@ public class Server extends Model implements ServerInterface {
 
     @Override
     public String getName() {
-        return "SERVER HERE";
+        return getName();
     }
 
     @Override
@@ -371,4 +385,5 @@ public class Server extends Model implements ServerInterface {
     public void notifyUpdate() {
         window.refreshAll();
     }
+
 }

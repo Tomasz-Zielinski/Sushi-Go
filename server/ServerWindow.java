@@ -161,6 +161,7 @@ public class ServerWindow extends JFrame implements UpdateListener {
 					}
 				}
 			}
+			orderPanel.refresh();
 		});
 		orderPanel.delete.addActionListener(e -> {
 			Order currentOrder = orderPanel.getActive();
@@ -169,6 +170,7 @@ public class ServerWindow extends JFrame implements UpdateListener {
 			} catch (UnableToDeleteException exception) {
 				JOptionPane.showMessageDialog(orderPanel, "Unable to remove order: " + exception.getMessage());
 			}
+			orderPanel.refresh();
 		});
 
 		//Dishes
@@ -187,6 +189,7 @@ public class ServerWindow extends JFrame implements UpdateListener {
 		dishPanel.edit.addActionListener(e -> {
 			Dish currentDish = dishPanel.getActive();
 			editRecipe(currentDish);
+			dishPanel.refresh();
 		});
 		dishPanel.delete.addActionListener(e -> {
 			Dish currentDish = dishPanel.getActive();
@@ -195,6 +198,7 @@ public class ServerWindow extends JFrame implements UpdateListener {
 			} catch (UnableToDeleteException exception) {
 				JOptionPane.showMessageDialog(orderPanel, "Unable to remove dish: " + exception.getMessage());
 			}
+			dishPanel.refresh();
 		});
 
 		//Ingredients Panel
@@ -202,6 +206,7 @@ public class ServerWindow extends JFrame implements UpdateListener {
 		ingredientPanel.edit.addActionListener(e -> {
 			Ingredient currentIngredient = ingredientPanel.getActive();
 			editIngredient(currentIngredient);
+			ingredientPanel.refresh();
 		});
 		ingredientPanel.add.addActionListener(e -> {
 			String name = (String) ingredientPanel.get("Name");
@@ -220,13 +225,15 @@ public class ServerWindow extends JFrame implements UpdateListener {
 			} catch (UnableToDeleteException exception) {
 				JOptionPane.showMessageDialog(orderPanel, "Unable to remove ingredient: " + exception.getMessage());
 			}
+			ingredientPanel.refresh();
 		});
 
 		//Suppliers Panel
 		supplierPanel.add.addActionListener(e -> {
-			String name = (String) ingredientPanel.get("Name");
+			String name = (String) supplierPanel.get("Name");
 			Number distance = (Number) supplierPanel.get("Distance");
-			server.addSupplier(name,distance);
+			server.addSupplier(name, distance);
+			supplierPanel.refresh();
 			supplierPanel.reset();
 		});
 		supplierPanel.delete.addActionListener(e -> {
@@ -236,6 +243,7 @@ public class ServerWindow extends JFrame implements UpdateListener {
 			} catch (UnableToDeleteException exception) {
 				JOptionPane.showMessageDialog(orderPanel, "Unable to remove supplier: " + exception.getMessage());
 			}
+			supplierPanel.refresh();
 		});
 
 		//Staff Panel
@@ -243,6 +251,7 @@ public class ServerWindow extends JFrame implements UpdateListener {
 			String name = (String) staffPanel.get("Name");
 			server.addStaff(name);
 			staffPanel.reset();
+			staffPanel.refresh();
 		});
 		staffPanel.delete.addActionListener(e -> {
 			Staff currentStaff = staffPanel.getActive();
@@ -251,6 +260,7 @@ public class ServerWindow extends JFrame implements UpdateListener {
 			} catch (UnableToDeleteException exception) {
 				JOptionPane.showMessageDialog(orderPanel, "Unable to remove staff: " + exception.getMessage());
 			}
+			staffPanel.refresh();
 		});
 
 		//Drones Panel
@@ -258,6 +268,7 @@ public class ServerWindow extends JFrame implements UpdateListener {
 			Number speed = (Number) dronePanel.get("Speed");
 			server.addDrone(speed);
 			dronePanel.reset();
+			dronePanel.refresh();
 		});
 		dronePanel.delete.addActionListener(e -> {
 			Drone currentDrone = dronePanel.getActive();
@@ -266,6 +277,7 @@ public class ServerWindow extends JFrame implements UpdateListener {
 			} catch (UnableToDeleteException exception) {
 				JOptionPane.showMessageDialog(orderPanel, "Unable to remove drone: " + exception.getMessage());
 			}
+			dronePanel.refresh();
 		});
 
 		//Postcodes Panel
@@ -274,6 +286,7 @@ public class ServerWindow extends JFrame implements UpdateListener {
 			Number distance = (Number) postcodePanel.get("Distance");
 			server.addPostcode(code,distance);
 			postcodePanel.reset();
+			postcodePanel.refresh();
 		});
 		postcodePanel.delete.addActionListener(e-> {
 			Postcode currentPostcode = postcodePanel.getActive();
@@ -282,6 +295,7 @@ public class ServerWindow extends JFrame implements UpdateListener {
 			} catch (UnableToDeleteException exception) {
 				JOptionPane.showMessageDialog(orderPanel, "Unable to remove postcode: " + exception.getMessage());
 			}
+			postcodePanel.refresh();
 		});
 
 		//Users panel
@@ -293,6 +307,7 @@ public class ServerWindow extends JFrame implements UpdateListener {
 			} catch (UnableToDeleteException exception) {
 				JOptionPane.showMessageDialog(orderPanel, "Unable to remove user: " + exception.getMessage());
 			}
+			userPanel.refresh();
 		});
 	}
 

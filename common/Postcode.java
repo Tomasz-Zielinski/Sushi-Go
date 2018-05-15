@@ -4,8 +4,7 @@ import java.io.Serializable;
 
 public class Postcode extends Model implements Serializable {
 
-    private String name;
-    private String code;
+    private String name, code;
     private Number distance;
 
     public Postcode(String code, Number distance) {

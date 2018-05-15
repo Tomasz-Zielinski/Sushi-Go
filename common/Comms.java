@@ -1,11 +1,13 @@
 package common;
 
 import client.Client;
+import client.ClientOrders;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.List;
 
 public class Comms {
@@ -31,7 +33,8 @@ public class Comms {
         if(username.equals("") || password.equals("")) return null;
         try {
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            out.writeObject(new Packet("login " + username + " " + password));
+            out.reset();
+            out.writeObject(new Message("login " + username + " " + password));
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             Object user = in.readObject();
             if(user instanceof User) return (User) user;
@@ -44,12 +47,12 @@ public class Comms {
     public List<Postcode> getPostcodes() {
         try {
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            out.writeObject(new Packet("postcodes"));
+            out.reset();
+            out.writeObject(new Message("postcodes"));
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             List<Postcode> postcodes = (List<Postcode>) in.readObject();
-            postcodes.forEach(e -> System.out.println(e.getCode()));
             return postcodes;
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e ) {
             e.printStackTrace();
         }
         return null;
@@ -58,7 +61,7 @@ public class Comms {
     public List<Dish> getDishes() {
         try {
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            out.writeObject(new Packet("dish"));
+            out.writeObject(new Message("dish"));
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             List<Dish> dishes = (List<Dish>) in.readObject();
             return dishes;
@@ -83,12 +86,12 @@ public class Comms {
     public List<Order> getOrders() {
         try {
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            out.writeObject(new Packet("orders"));
+            out.writeObject(new Message("orders"));
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             List<Order> orders = (List<Order>) in.readObject();
             return orders;
         } catch (ClassNotFoundException | IOException e) {
-            e.printStackTrace();
+            System.err.println("Socket write error");
         }
         return null;
     }
@@ -96,7 +99,7 @@ public class Comms {
     public void cancelOrder(Order order) {
         try {
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            out.writeObject(new Packet("cancel", order));
+            out.writeObject(new Message("cancel", order));
         } catch (IOException e) {
             e.printStackTrace();
         }

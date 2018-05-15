@@ -2,32 +2,32 @@ package common;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Order extends Model implements Serializable {
 
-    private String name;
-    private Number distance;
+    private String name, status;
+    private Number distance, cost;
     private boolean complete;
-    private String status;
-    private Number cost;
-    private HashMap<Dish, Number> basket;
+    private Map<Dish, Number> basket;
     private Lock lock = new ReentrantLock();
 
-    public Order(String name,  Number cost, Number distance) {
+    public Order(String name, Number cost, Number distance) {
         this.name = name;
-        this.distance = distance;
-        this.complete = false;
         this.status = "Unfinished";
+        this.distance = distance;
         this.cost = cost;
+        this.complete = false;
+        this.basket = new HashMap<>();
     }
 
-    public Order(String name, Number cost, Number distance, HashMap<Dish, Number> basket) {
+    public Order(String name, Number cost, Number distance, Map<Dish, Number> basket) {
         this.name = name;
+        this.status = "Unfinished";
         this.distance = distance;
         this.complete = false;
-        this.status = "Unfinished";
         this.cost = cost;
         this.basket = basket;
     }
@@ -40,10 +40,11 @@ public class Order extends Model implements Serializable {
     public boolean isComplete() { return complete; }
     public String getStatus() { return status; }
     public Number getCost() { return cost; }
-    public HashMap<Dish, Number> getBasket() { return basket; }
+    public Map<Dish, Number> getBasket() { return basket; }
     public Lock getLock() {
         return lock;
     }
     public void setComplete() {this.complete = !complete;}
+    public void setStatus(String status) {this.status = status;}
 
 }

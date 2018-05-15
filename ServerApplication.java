@@ -15,8 +15,8 @@ public class ServerApplication extends Thread {
         ServerWindow window = new ServerWindow(server);
         server.build(window);
         server.loadConfiguration("src/server/config.txt");
-        Thread t = new ServerApplication(6666, server);
-        t.start();
+        Thread mainThread = new ServerApplication(8000, server);
+        mainThread.start();
     }
 
     private ServerApplication(int port, Server server) throws IOException {
