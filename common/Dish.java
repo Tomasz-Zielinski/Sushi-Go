@@ -28,20 +28,49 @@ public class Dish extends Model implements Serializable {
     public String getName() {
         return name;
     }
-    public String getDescription() { return description; }
-    public Number getPrice() { return price; }
-    public Number getRestockThreshold() { return restockThreshold; }
-    public Number getRestockAmount() { return restockAmount; }
-    public Map<Ingredient, Number> getRecipe() { return recipe; }
-    public Number getStock() { return stock; }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public Number getPrice() {
+        return price;
+    }
+
+    public Number getRestockThreshold() {
+        return restockThreshold;
+    }
+
+    public Number getRestockAmount() {
+        return restockAmount;
+    }
+
+    public Map<Ingredient, Number> getRecipe() {
+        return recipe;
+    }
+
+    public Number getStock() {
+        return stock;
+    }
+
     public Lock getLock() {
         return lock;
     }
 
-    public void setStock(Number stock) { this.stock = stock; }
-    public void setRecipe(Map<Ingredient, Number> recipe) { this.recipe = recipe; }
+    public void setStock(Number stock) {
+        notifyUpdate("stock", this.stock, stock);
+        this.stock = stock;
+    }
+
+    public void setRecipe(Map<Ingredient, Number> recipe) {
+        notifyUpdate("recipe", this.recipe, recipe);
+        this.recipe = recipe;
+    }
+
     public void setRestockLevels(Number restockThreshold, Number restockAmount) {
+        notifyUpdate("restockThreshold", this.restockThreshold, restockThreshold);
         this.restockThreshold = restockThreshold;
+        notifyUpdate("restockAmount", this.restockAmount, restockAmount);
         this.restockAmount = restockAmount;
     }
 }

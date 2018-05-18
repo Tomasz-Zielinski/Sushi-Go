@@ -16,14 +16,16 @@ public class Client implements ClientInterface {
         this.comms = new Comms(socket);
     }
 
-    public void assign(ClientWindow window) {
+    public void build(ClientWindow window) {
         this.window = window;
     }
     public User getUser() { return user; }
 
     @Override
     public User register(String username, String password, String address, Postcode postcode) {
-        return comms.registerNewUser(username, password, address, postcode);
+        User user = comms.registerNewUser(username, password, address, postcode);
+        this.user = user;
+        return user;
     }
 
     @Override
@@ -61,7 +63,7 @@ public class Client implements ClientInterface {
     @Override
     public Number getBasketCost(User user) {
         ArrayList<Integer> prices = new ArrayList<>();
-        Integer price = 0;
+        int price = 0;
         user.getBasket().forEach((key, value) -> prices.add((int) key.getPrice() * (int)value));
         for (Integer integer : prices) {
             price += integer;
@@ -77,7 +79,7 @@ public class Client implements ClientInterface {
 
     @Override
     public Order checkoutBasket(User user) {
-        return comms.makeOrder(user, getBasketCost(user));
+        return comms.makeOrder(this.user, getBasketCost(this.user));
     }
 
 
@@ -126,7 +128,4 @@ public class Client implements ClientInterface {
         window.updated(new UpdateEvent());
     }
 
-    public void update() {
-        window.refreshOrders();
-    }
 }

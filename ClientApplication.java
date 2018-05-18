@@ -1,5 +1,4 @@
 import client.Client;
-import client.ClientOrders;
 import client.ClientWindow;
 import java.io.IOException;
 import java.net.Socket;
@@ -7,18 +6,28 @@ import java.net.Socket;
 
 public class ClientApplication {
 
+    private static Client client;
+
     public static void main(String[] args) {
+        initialise();
+        launchGUI();
+    }
+
+    private static void initialise() {
         try {
             Socket socket = new Socket("localhost", 8000);
             System.out.println("Connected to " + socket.getRemoteSocketAddress());
-            Client client = new Client(socket);
-            ClientWindow window = new ClientWindow(client);
-            client.assign(window);
-            Thread updateOrders = new Thread(new ClientOrders(client));
-            updateOrders.run();
-            while(true);
+            client = new Client(socket);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Run server first");
+        }
+    }
+
+    private static void launchGUI() {
+        ClientWindow window = new ClientWindow(client);
+        client.build(window);
+        while(true) {
+
         }
     }
 

@@ -4,7 +4,9 @@ import java.io.Serializable;
 
 public class Message implements Serializable {
 
-    private String message;
+    private String message = "";
+    private String username = "";
+    private String password = "";
     private Order order;
 
     public Message(String message) {this.message = message; }
@@ -12,15 +14,17 @@ public class Message implements Serializable {
         this.message = message;
         this.order = order;
     }
-
-    public void setMessage(String message) {
+    public Message(String message, String username, String password) {
         this.message = message;
+        this.username = username;
+        this.password = password;
     }
 
     public String getMessage() {
         return message;
     }
-
+    public String getUsername() { return username; }
+    public String getPassword() { return password; }
     public Order getOrder() {
         return order;
     }

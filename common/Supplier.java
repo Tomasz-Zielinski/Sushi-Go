@@ -16,7 +16,13 @@ public class Supplier extends Model implements Serializable {
     public String getName() {
         return name;
     }
-    public Number getDistance() { return distance; }
-    public void setDistance(Number distance) { this.distance = distance; }
-    public void setName(String name) { this.name = name; }
+
+    public Number getDistance() {
+        return distance;
+    }
+
+    public void setName(String name) {
+        notifyUpdate("name", this.name, name);
+        this.name = name;
+    }
 }

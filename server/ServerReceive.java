@@ -1,13 +1,14 @@
 package server;
 
-import java.io.*;
+import common.Message;
+import common.Order;
+import common.User;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
-
-import common.Drone;
-import common.Order;
-import common.Message;
-import common.User;
 
 public class ServerReceive implements Runnable {
 
@@ -21,48 +22,63 @@ public class ServerReceive implements Runnable {
 
     @Override
     public void run() {
-        while(true) {
+        while (true) {
             try {
+                // Read stream
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
                 Object o = in.readObject();
-                if(o instanceof User) {
-                    if (!server.getUserList().contains(o)) {
-                        server.getUserList().add((User) o);
-                        server.notifyUpdate();
-                    } else {
-                        System.out.println("User already exist");
+
+                // [Register] If User does not exist, add him to the list and send back, otherwise return null
+                if (o instanceof User) {
+                    for (User user : server.getUsers()) {
+                        if (user.getName().equals(((User) o).getName())) o = null;
                     }
-                } else if(o instanceof Order) {
-                    server.getOrders().add((Order) o);
-                } else if(o instanceof Message) {
-                    if(((Message) o).getMessage().equals("dish")) {
+                    if (o != null) server.getUsers().add((User) o);
+                    ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                    out.writeObject(o);
+                }
+                // [Make Order]
+                else if (o instanceof Order) {
+                    server.addOrder((Order)o);
+                }
+                // If Message object is sent
+                else if (o instanceof Message) {
+                    Message message = (Message) o;
+                    // [Get Dishes]
+                    if (message.getMessage().equals("dish")) {
                         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                         out.writeObject(server.getDishes());
-                    } else if(((Message) o).getMessage().equals("orders")) {
+                    }
+                    // [Cancel Order]
+                    else if (message.getMessage().equals("cancel")) {
+                        server.removeOrder(message.getOrder());
+                    }
+                    // [Get Orders]
+                    else if(message.getMessage().equals("orders")) {
                         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                         out.writeObject(server.getOrders());
-                    } else if(((Message) o).getMessage().equals("cancel")) {
-                        server.getOrders().remove(((Message) o).getOrder());
-                    } else if(((Message) o).getMessage().startsWith("login")) {
-                        String arr[] = ((Message) o).getMessage().split(" ");
-                        System.out.println("Somebody wants to login" + arr[1] + arr[2]);
-                        for (User user : server.getUsers()) {
-                            if(user.getName().equals(arr[1]) && user.getPassword().equals(arr[2])){
-                                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-                                out.writeObject(user);
-                            } else {
-                                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-                                out.writeObject(new Message("Wrong"));
+                    }
+                    // [Login] If user with given username and password exists return him, otherwise return null
+                    else if (message.getMessage().equals("login")) {
+                        User user = null;
+                        for (User u : server.getUsers()) {
+                            if (u.getName().equals(message.getUsername()) &&
+                                    u.getPassword().equals(message.getPassword())) {
+                                user = u;
                             }
                         }
-                    } else if(((Message) o).getMessage().startsWith("postcodes")) {
+                        ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                        out.writeObject(user);
+                    }
+                    // [Get Postcodes]
+                    else if (message.getMessage().startsWith("postcodes")) {
                         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                         out.writeObject(server.getPostcodes());
-                        System.out.println(server.getPostcodes());
                     }
                 }
             } catch (SocketException e) {
                 System.out.println("Client disconnected");
+                break;
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
                 break;

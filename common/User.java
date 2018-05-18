@@ -18,13 +18,27 @@ public class User extends Model implements Serializable {
         this.basket = new HashMap<>();
     }
 
-    public void addToBasket(Dish dish, Number quantity) { basket.put(dish, quantity); }
+    public void addToBasket(Dish dish, Number quantity) {
+        basket.put(dish, quantity);
+    }
+
+    public void setPostcode(Postcode postcode) {
+        this.postcode = postcode;
+    }
 
     public String getName() {
         return name;
     }
-    public String getPassword() { return password; }
-    public String getAddress() { return address; }
-    public Postcode getPostcode() { return postcode; }
-    public Map<Dish, Number> getBasket() { return basket; }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public Postcode getPostcode() {
+        return postcode;
+    }
+
+    public Map<Dish, Number> getBasket() {
+        return basket;
+    }
 }

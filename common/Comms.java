@@ -1,13 +1,10 @@
 package common;
 
-import client.Client;
-import client.ClientOrders;
-
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.List;
 
 public class Comms {
@@ -19,29 +16,28 @@ public class Comms {
     }
 
     public User registerNewUser(String username, String password, String address, Postcode postcode) {
-        User user = new User(username, password, address, postcode);
         try {
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            out.writeObject(user);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return user;
-    }
-
-    public User login(String username, String password) {
-        if(username.equals("") || password.equals("")) return null;
-        try {
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            out.reset();
-            out.writeObject(new Message("login " + username + " " + password));
+            out.writeObject(new User(username, password, address, postcode));
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-            Object user = in.readObject();
-            if(user instanceof User) return (User) user;
-        } catch (Exception e) {
+            User user = (User) in.readObject();
+            if(user.getPostcode() == null) return null;
+            return user;
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public User login(String username, String password) {
+        try {
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            out.writeObject(new Message("login", username, password));
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+            return (User) in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            return null;
+        }
     }
 
     public List<Postcode> getPostcodes() {
@@ -50,9 +46,8 @@ public class Comms {
             out.reset();
             out.writeObject(new Message("postcodes"));
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-            List<Postcode> postcodes = (List<Postcode>) in.readObject();
-            return postcodes;
-        } catch (IOException | ClassNotFoundException e ) {
+            return (List<Postcode>) in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
         return null;
@@ -63,8 +58,7 @@ public class Comms {
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
             out.writeObject(new Message("dish"));
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-            List<Dish> dishes = (List<Dish>) in.readObject();
-            return dishes;
+            return (List<Dish>) in.readObject();
         } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
         }
@@ -73,6 +67,7 @@ public class Comms {
 
     public Order makeOrder(User user, Number cost) {
         try {
+            if(user.getPostcode() == null) user.setPostcode(getPostcodes().get(0));
             Order order = new Order(user.getName(), cost, user.getPostcode().getDistance(), user.getBasket());
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
             out.writeObject(order);
@@ -88,8 +83,7 @@ public class Comms {
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
             out.writeObject(new Message("orders"));
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-            List<Order> orders = (List<Order>) in.readObject();
-            return orders;
+            return (List<Order>) in.readObject();
         } catch (ClassNotFoundException | IOException e) {
             System.err.println("Socket write error");
         }

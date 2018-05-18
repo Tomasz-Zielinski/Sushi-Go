@@ -2,6 +2,7 @@ package server;
 
 import common.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -29,44 +30,58 @@ public class Server extends Model implements ServerInterface {
 
     public void build(ServerWindow window) {
         this.window = window;
+        if (new File("data.txt").exists()) {
+            loadConfiguration("data.txt");
+        }
     }
-    public List<User> getUserList() {return userList;}
 
     @Override
     public void loadConfiguration(String filename) {
         try {
+            dishes.clear();
+            dishStockLevels.clear();
+            ingredients.clear();
+            ingredientStockLevels.clear();
+            suppliers.clear();
+            drones.clear();
+            staff.clear();
+            orders.clear();
+            postcodes.clear();
+            userList.clear();
             Files.lines(Paths.get(filename), StandardCharsets.UTF_8).forEach(e -> {
                 if (e.length() != 0) {
                     String[] arr = e.split(":");
                     if (e.startsWith("SUPPLIER")) {
                         addSupplier(arr[1], Integer.valueOf(arr[2]));
                     } else if (e.startsWith("INGREDIENT")) {
-                        Supplier sup = new Supplier("Blank", 0);
-                        for (Supplier supplier : suppliers) {
-                            if (supplier.getName().equals(arr[3])) sup = supplier;
+                        for (Supplier supplier : getSuppliers()) {
+                            if (supplier.getName().equals(arr[3])) {
+                                addIngredient(arr[1], arr[2], supplier, Integer.valueOf(arr[4]), Integer.valueOf(arr[5]));
+                            }
                         }
-                        addIngredient(arr[1], arr[2], sup, Integer.valueOf(arr[4]), Integer.valueOf(arr[5]));
                     } else if (e.startsWith("DISH")) {
                         String[] r = arr[6].split(",");
                         HashMap<Ingredient, Number> recipe = new HashMap<>();
-                        for (String s : r) {
-                            for (Ingredient ingredient : getIngredients()) {
-                                if (ingredient.getName().equals(s.split(" ")[2])) {
-                                    recipe.put(ingredient, Integer.parseInt(s.split(" ")[0]));
+                        if(!arr[6].equals("Not specified")) {
+                            for (String s : r) {
+                                for (Ingredient ingredient : ingredients) {
+                                    if (ingredient.getName().equals(s.split(" ")[2])) {
+                                        recipe.put(ingredient, Integer.parseInt(s.split(" ")[0]));
+                                    }
                                 }
                             }
                         }
-                        addDish(arr[1], arr[2], Integer.valueOf(arr[3]), Integer.valueOf(arr[4]), Integer.valueOf(arr[5]));
-                        getDishes().get(dishes.size() - 1).setRecipe(recipe);
+                        Dish d = addDish(arr[1], arr[2], Integer.valueOf(arr[3]), Integer.valueOf(arr[4]), Integer.valueOf(arr[5]));
+                        d.setRecipe(recipe);
                     } else if (e.startsWith("POSTCODE")) {
                         addPostcode(arr[1], Integer.valueOf(arr[2]));
                     } else if (e.startsWith("USER")) {
-                        Postcode code = new Postcode("Blank", 0);
                         for (Postcode postcode : postcodes) {
-                            if (postcode.getCode().equals(arr[4])) code = postcode;
+                            System.out.println(postcode.getCode().equals(arr[4]));
+                            if (postcode.getCode().equals(arr[4])) {
+                                userList.add(new User(arr[1], arr[2], arr[3], postcode));
+                            }
                         }
-                        userList.add(new User(arr[1], arr[2], arr[3], code));
-                        notifyUpdate();
                     } else if (e.startsWith("ORDER")) {
                         Number cost = 0;
                         int quantity;
@@ -91,15 +106,17 @@ public class Server extends Model implements ServerInterface {
                             }
                         }
                         orders.add(new Order(arr[1], cost, distance, basket));
-                        notifyUpdate();
                     } else if (e.startsWith("STOCK")) {
-                        getDishes().forEach(d -> d.setStock(20));
+                        for (Ingredient i : ingredients) {
+                            if(arr[1].equals(i.getName())) i.setStock(Integer.valueOf(arr[2]));
+                        }
+                        for (Dish d : dishes) {
+                            if(arr[1].equals(d.getName())) d.setStock(Integer.valueOf(arr[2]));
+                        }
                     } else if (e.startsWith("STAFF")) {
                         addStaff(arr[1]);
                     } else if (e.startsWith("DRONE")) {
                         addDrone(Integer.valueOf(arr[1]));
-                    } else {
-                        System.out.println("????");
                     }
                 }
             });
@@ -206,7 +223,9 @@ public class Server extends Model implements ServerInterface {
     }
 
     @Override
-    public void removeIngredient(Ingredient ingredient) { ingredients.remove(ingredient); }
+    public void removeIngredient(Ingredient ingredient) {
+        ingredients.remove(ingredient);
+    }
 
     @Override
     public void setRestockLevels(Ingredient ingredient, Number restockThreshold, Number restockAmount) {
@@ -379,6 +398,10 @@ public class Server extends Model implements ServerInterface {
     @Override
     public void addUpdateListener(UpdateListener listener) {
 
+    }
+
+    public void addOrder(Order order) {
+        orders.add(order);
     }
 
     @Override

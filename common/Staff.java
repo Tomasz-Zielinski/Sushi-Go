@@ -13,40 +13,53 @@ public class Staff extends Model implements Runnable {
 
     public Staff(String name, Server server) {
         this.name = name;
-        this.status = "Preparing to work";
+        this.status = "Nothing to do";
         this.server = server;
     }
 
     private void makeDish() {
         try {
+            outerloop:
             for (Dish dish : server.getDishes()) {
+
+                // Check if we need more dishes of this type
+                if((int) dish.getStock() >= (int) dish.getRestockThreshold()) return;
+
+                // Acquire lock
                 Lock lock = dish.getLock();
                 lock.lock();
                 notifyUpdate("Checking if " + dish.getName() + " can be made");
                 Thread.sleep(1000);
-                for (HashMap.Entry<Ingredient, Number> entry : dish.getRecipe().entrySet()) {
-                    Ingredient ingredient = entry.getKey();
-                    Number quantity = entry.getValue();
-                    notifyUpdate("Checking if " + ingredient.getName() + " is sufficient to make " + dish.getName());
-                    Thread.sleep(1000);
-                    if ((int) ingredient.getStock() < (int) quantity) {
-                        notifyUpdate("Not enough " + ingredient.getName() + " to make " + dish.getName());
+
+                // Check if there are enough ingredients to make dish
+                for (HashMap.Entry<Ingredient, Number> recipeItem : dish.getRecipe().entrySet()) {
+                    if ((int) recipeItem.getKey().getStock() < (int) recipeItem.getValue()) {
+                        notifyUpdate("Not enough " + recipeItem.getKey().getName());
                         Thread.sleep(1000);
-                        return;
+                        notifyUpdate("Idle");
+                        continue outerloop;
                     }
                 }
+
+                // Subtract ingredients necessary to make the dish
                 dish.getRecipe().forEach((key, value) -> key.setStock((int) key.getStock() - (int) value));
-                int waitTime = (int) (Math.random() * 40 + 20);
-                for (int t = waitTime; t > 0; t--) {
+
+
+                // Calculate wait time, wait until dish is made
+                for (int t = (int) (Math.random() * 40 + 20); t > 0; t--) {
                     notifyUpdate("Making " + dish.getName() + " - " + t + "s left");
                     Thread.sleep(1000);
                 }
+
+                // Dish successfully made, add one to the stock, unlock object
                 dish.setStock((int) dish.getStock() + 1);
                 lock.unlock();
             }
         } catch (ConcurrentModificationException e) {
+            // Restart on modification
             makeDish();
         } catch (InterruptedException e) {
+            // Interrupt on deletion
             Thread.currentThread().interrupt();
         }
     }
@@ -60,6 +73,7 @@ public class Staff extends Model implements Runnable {
         return status;
     }
 
+    // Helper function to make wait time be displayed live
     public void notifyUpdate(String status) {
         this.status = status;
         server.notifyUpdate();

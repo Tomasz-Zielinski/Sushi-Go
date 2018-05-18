@@ -17,6 +17,12 @@ public class Postcode extends Model implements Serializable {
     public String getName() {
         return name;
     }
-    public String getCode() { return code; }
-    public Number getDistance() { return distance; }
+
+    public String getCode() {
+        return code;
+    }
+
+    public Number getDistance() {
+        return distance;
+    }
 }

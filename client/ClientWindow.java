@@ -654,7 +654,7 @@ public class ClientWindow extends JFrame implements UpdateListener {
 	 */
 	public void startTimer() {
 		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-		int timeInterval = 5;
+		int timeInterval = 1;
 
 		//Refresh the status of orders every 5 seconds
 		scheduler.scheduleAtFixedRate(() -> refreshOrders(), 0, timeInterval, TimeUnit.SECONDS);

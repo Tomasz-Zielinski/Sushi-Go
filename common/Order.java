@@ -36,15 +36,39 @@ public class Order extends Model implements Serializable {
     public String getName() {
         return name;
     }
-    public Number getDistance() { return distance; }
-    public boolean isComplete() { return complete; }
-    public String getStatus() { return status; }
-    public Number getCost() { return cost; }
-    public Map<Dish, Number> getBasket() { return basket; }
+
+    public Number getDistance() {
+        return distance;
+    }
+
+    public boolean isComplete() {
+        return complete;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public Number getCost() {
+        return cost;
+    }
+
+    public Map<Dish, Number> getBasket() {
+        return basket;
+    }
+
     public Lock getLock() {
         return lock;
     }
-    public void setComplete() {this.complete = !complete;}
-    public void setStatus(String status) {this.status = status;}
+
+    public void setComplete() {
+        this.complete = !complete;
+        notifyUpdate("complete", this.complete, complete);
+    }
+
+    public void setStatus(String status) {
+        notifyUpdate("status", this.status, status);
+        this.status = status;
+    }
 
 }
