@@ -1,4 +1,4 @@
-#  Digital-Doily :sushi:
+#  Sushi-Go :sushi:
 
 >Coursework sushi system project which consists of client and server graphical user interfaces to interact with each other. Communication layer is done using java implementation of ServerSocket. Server side is able to monitor and modify orders, dishes, ingredients, suppliers, staff, drones, users, postcodes. Staff and Drone instances run in separate threads. System info can be saved and then loaded after closing application. Client is able to register, login, order a dish, view prices checkout basket. Every change is sent to the server with proper response.
 
